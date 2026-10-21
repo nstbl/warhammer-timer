@@ -20,7 +20,8 @@ class _MySetupState extends State<MySetup> {
   Color light_ofset = Color.fromRGBO(95, 45, 85, 1);
   Color white = Color.fromRGBO(255,255,255,1);
 
-  int timeRemaining = 60;
+  int timeRemaining = 3 * 60 * 60;
+  DateTime? endTime;
   Timer? countDownTimer;
   Timer? resetConfTimer;
 
@@ -52,15 +53,22 @@ class _MySetupState extends State<MySetup> {
     resetConfTimer = null;
     countDownTimer?.cancel();
     countDownTimer = null;
-    setState(() {timeRemaining = 3 * 60 * 60; isPaused = true; resetConf = false;});
+    setState(() {timeRemaining = 3 * 60 * 60; isPaused = true; resetConf = false; endTime = null;});
   }
 
   void pauseTimer() {
+    if (endTime != null) { final seconds = endTime!.difference(DateTime.now()).inSeconds;
+      setState(() { timeRemaining = seconds.clamp(0, 3 * 60 * 60);});
+      isPaused = true;
+    } else {
+      setState(() {
+        isPaused = true;
+      });
+    }
+
     countDownTimer?.cancel();
     countDownTimer = null;
-    setState(() {
-      isPaused = true;
-    });
+    endTime = null;
   }
 
   void resumeTimer() {
@@ -73,16 +81,25 @@ class _MySetupState extends State<MySetup> {
       return;
     }
 
+    endTime = DateTime.now().add(Duration(seconds: timeRemaining));
+
     isPaused = false;
 
-    countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (timeRemaining > 0) {
-        setState(() {timeRemaining--;});
-      } else {
-        timer.cancel();
-        countDownTimer = null;
-      }
-    });
+    countDownTimer = Timer.periodic(const Duration(seconds: 1), (_) => updateCountdown());
+  }
+
+  void updateCountdown() {
+    if (endTime == null) { return; }
+
+    final seconds = endTime!.difference(DateTime.now()).inSeconds;
+
+    setState(() {timeRemaining = seconds.clamp(0, 3 * 60 * 60);});
+
+    if (timeRemaining <= 0) {
+      countDownTimer?.cancel();
+      countDownTimer = null;
+      endTime = null;
+    }
   }
 
   String getCurrentPhase() {
