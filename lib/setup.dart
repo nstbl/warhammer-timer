@@ -31,7 +31,10 @@ class _MySetupState extends State<MySetup> {
     }
 
     endTime = DateTime.now().add(Duration(seconds: timeRemaining));
-    isPaused = false;
+    setState(() {isPaused = false;});
+
+    updateCountdown();
+
     countDownTimer = Timer.periodic(
       const Duration(seconds: 1),
       (_) => updateCountdown(),
@@ -114,6 +117,7 @@ class _MySetupState extends State<MySetup> {
       countDownTimer?.cancel();
       countDownTimer = null;
       endTime = null;
+      isPaused = true;
     }
   }
 
@@ -137,8 +141,10 @@ class _MySetupState extends State<MySetup> {
       return 'Turn 5';
     } else if (elapsedMinutes < 165) {
       return 'Turn 6';
+    } else if (elapsedMinutes < 180) {
+      return 'Final 15 minutes!';
     } else {
-      return 'Final 15 minutes';
+      return 'Time!';
     }
   }
 
@@ -171,7 +177,7 @@ class _MySetupState extends State<MySetup> {
             final timerFontSize = isMobile ? 48.0 : 88.0;
             final phaseFontSize = isMobile ? 22.0 : 32.0;
             final buttonFontSize = isMobile ? 14.0 : 17.0;
-            final buttonHeight = isMobile ? 52.0 : 56.0;
+            final buttonHeight = isMobile ? 38.0 : 56.0;
             final padding = isMobile ? 16.0 : 32.0;
 
             return Center(
@@ -208,34 +214,39 @@ class _MySetupState extends State<MySetup> {
                       if (isMobile) ...[
                         SizedBox(
                           height: buttonHeight,
-                          child: ElevatedButton(
+                          width: 140,
+                          child: ElevatedButton.icon(
                             onPressed: isPaused ? startTimer : pauseTimer,
-                            child: Text(
-                              isPaused ? "START" : "PAUSE",
+                            label: Text(
+                              isPaused ? "S T A R T" : "P A U S E",
                               style: TextStyle(fontSize: buttonFontSize),
+
                             ),
+                            icon: isPaused
+                                ? const Icon(Icons.play_arrow)
+                                : const Icon(Icons.pause),
+                            iconAlignment: IconAlignment.end,
                           ),
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
                           height: buttonHeight,
-                          child: ElevatedButton(
+                          width: 140,
+                          child: ElevatedButton.icon(
                             onPressed: resetTimer,
-                            child: !primeReset
-                                ? Text(
-                                    "RESET",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: buttonFontSize,
-                                    ),
-                                  )
+                            label: !primeReset
+                                ? Text("R E S E T")
                                 : Text(
-                                    "RESET",
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: buttonFontSize,
-                                    ),
-                                  ),
+                              style: TextStyle(color: Colors.white),
+                              "R E S E T",
+                            ),
+                            style: !primeReset
+                                ? null
+                                : ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+                            iconAlignment: IconAlignment.end,
+                            icon: const Icon(Icons.reset_tv),
                           ),
                         ),
                       ] else
